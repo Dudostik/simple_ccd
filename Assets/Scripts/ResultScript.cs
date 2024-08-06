@@ -2,46 +2,50 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
+using Dudostik.CardTestGame.Entities;
 
-public class ResultScript : MonoBehaviour
+namespace Dudostik.CardTestGame.GameLogic
 {
-    [SerializeField] private Hero localHero;
-    [SerializeField] private Hero enemyHero;
-
-    [Space(5f)]
-    [SerializeField] private GameObject resultContainer;
-    [SerializeField] private TextMeshProUGUI resultScreenText;
-    [SerializeField] private Button startAgainButton;
-    [SerializeField] private string sceneToLoad;
-
-    private void Awake()
+    public class ResultScript : MonoBehaviour
     {
-        localHero.OnDead += OnLocalHeroDead;
-        enemyHero.OnDead += OnEnemyHeroDead;
+        [SerializeField] private Hero localHero;
+        [SerializeField] private Hero enemyHero;
 
-        startAgainButton.onClick.AddListener(() => 
+        [Space(5f)]
+        [SerializeField] private GameObject resultContainer;
+        [SerializeField] private TextMeshProUGUI resultScreenText;
+        [SerializeField] private Button startAgainButton;
+        [SerializeField] private string sceneToLoad;
+
+        private void Awake()
         {
-            SceneManager.LoadScene(sceneToLoad);
-        });
-    }
+            localHero.OnDead += OnLocalHeroDead;
+            enemyHero.OnDead += OnEnemyHeroDead;
 
-    private void OnDestroy()
-    {
-        localHero.OnDead -= OnLocalHeroDead;
-        enemyHero.OnDead -= OnEnemyHeroDead;
-    }
+            startAgainButton.onClick.AddListener(() =>
+            {
+                SceneManager.LoadScene(sceneToLoad);
+            });
+        }
 
-    private void OnLocalHeroDead()
-    {
-        resultContainer.SetActive(true);
-        resultScreenText.SetText("You died");
-        resultScreenText.color = Color.red;
-    }
+        private void OnDestroy()
+        {
+            localHero.OnDead -= OnLocalHeroDead;
+            enemyHero.OnDead -= OnEnemyHeroDead;
+        }
 
-    private void OnEnemyHeroDead()
-    {
-        resultContainer.SetActive(true);
-        resultScreenText.SetText("You won");
-        resultScreenText.color = Color.green;
+        private void OnLocalHeroDead()
+        {
+            resultContainer.SetActive(true);
+            resultScreenText.SetText("You died");
+            resultScreenText.color = Color.red;
+        }
+
+        private void OnEnemyHeroDead()
+        {
+            resultContainer.SetActive(true);
+            resultScreenText.SetText("You won");
+            resultScreenText.color = Color.green;
+        }
     }
 }

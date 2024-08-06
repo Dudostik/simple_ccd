@@ -2,55 +2,59 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using Dudostik.CardTestGame.Entities;
 
-public class TurnsManager : MonoBehaviour
+namespace Dudostik.CardTestGame.Services
 {
-    [SerializeField] private Hero[] heroesOnScene;
-    private int currentPlayerIndex = -1;
-    private Hero currentTurnHero;
-
-    public event Action<Hero> OnNextTurn;
-
-    private void Awake()
+    public class TurnsManager : MonoBehaviour
     {
-        NextTurn();
-    }
+        [SerializeField] private Hero[] heroesOnScene;
+        private int currentPlayerIndex = -1;
+        private Hero currentTurnHero;
 
-    public void NextTurn()
-    {
-        if(currentTurnHero != null)
-            currentTurnHero.OnTurnStateChanged(false);
+        public event Action<Hero> OnNextTurn;
 
-        currentPlayerIndex++;
-
-        if(currentPlayerIndex >= heroesOnScene.Length)
-            currentPlayerIndex = 0; 
-
-        Hero hero = heroesOnScene[currentPlayerIndex];
-
-        if (hero.MaxCrystalCount < 10)
+        private void Awake()
         {
-            hero.SetMaxCrystalCount(hero.MaxCrystalCount + 1);
-            hero.SetCrystalCount(hero.MaxCrystalCount);
-        }
-        else
-        {
-            hero.SetMaxCrystalCount(10);
+            NextTurn();
         }
 
-        currentTurnHero = hero;
-        currentTurnHero.OnTurnStateChanged(true);
-
-        Card card = hero.Deck.GetCardFromDeck();
-
-        if (card != null)
+        public void NextTurn()
         {
-            hero.AddCardInHand(card);
-            OnNextTurn?.Invoke(currentTurnHero);
-        }
-        else
-        {
-            OnNextTurn?.Invoke(currentTurnHero);
+            if (currentTurnHero != null)
+                currentTurnHero.OnTurnStateChanged(false);
+
+            currentPlayerIndex++;
+
+            if (currentPlayerIndex >= heroesOnScene.Length)
+                currentPlayerIndex = 0;
+
+            Hero hero = heroesOnScene[currentPlayerIndex];
+
+            if (hero.MaxCrystalCount < 10)
+            {
+                hero.SetMaxCrystalCount(hero.MaxCrystalCount + 1);
+                hero.SetCrystalCount(hero.MaxCrystalCount);
+            }
+            else
+            {
+                hero.SetMaxCrystalCount(10);
+            }
+
+            currentTurnHero = hero;
+            currentTurnHero.OnTurnStateChanged(true);
+
+            Card card = hero.Deck.GetCardFromDeck();
+
+            if (card != null)
+            {
+                hero.AddCardInHand(card);
+                OnNextTurn?.Invoke(currentTurnHero);
+            }
+            else
+            {
+                OnNextTurn?.Invoke(currentTurnHero);
+            }
         }
     }
 }

@@ -1,25 +1,29 @@
 using UnityEngine;
+using Dudostik.CardTestGame.Entities;
 
-public class CardDealer : MonoBehaviour
+namespace Dudostik.CardTestGame.Services
 {
-    [SerializeField] private int initialHandCardsCount = 4;
-
-    [Space(5f)]
-    [SerializeField] private Hero[] heroesCollection;
-
-    private void Start()
+    public class CardDealer : MonoBehaviour
     {
-        DealCardsInHand();
-    }
+        [SerializeField] private int initialHandCardsCount = 4;
 
-    public void DealCardsInHand()
-    {
-        foreach (Hero hero in heroesCollection) 
+        [Space(5f)]
+        [SerializeField] private Hero[] heroesCollection;
+
+        private void Start()
         {
-            for(int i = 0; i < initialHandCardsCount; i++)
+            DealCardsInHand();
+        }
+
+        public void DealCardsInHand()
+        {
+            foreach (Hero hero in heroesCollection)
             {
-                Card card = hero.Deck.GetCardFromDeck();
-                hero.AddCardInHand(card);
+                for (int i = 0; i < initialHandCardsCount; i++)
+                {
+                    Card card = hero.Deck.GetCardFromDeck();
+                    hero.AddCardInHand(card);
+                }
             }
         }
     }

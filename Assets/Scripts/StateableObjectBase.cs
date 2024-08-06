@@ -2,24 +2,30 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class StateableObjectBase : MonoBehaviour
+namespace Dudostik.CardTestGame.GameLogic
 {
-    [SerializeField] protected GameObject defaultState;
-
-    protected List<GameObject> allStates;
-
-    protected virtual void Awake()
+    public abstract class StateableObjectBase : MonoBehaviour
     {
-        allStates = GetAllPossibleStates();
+        [SerializeField] protected GameObject defaultState;
 
-        SetStateByName(defaultState.name);
-    }
+        protected List<GameObject> allStates;
 
-    protected abstract List<GameObject> GetAllPossibleStates();
+        protected virtual void Awake()
+        {
+            allStates = GetAllPossibleStates();
 
-    public void SetStateByName(string stateName)
-    {
-        foreach (var state in allStates)
-            state.SetActive(state.name.Equals(stateName));
+            SetStateByName(defaultState.name);
+        }
+
+        protected abstract List<GameObject> GetAllPossibleStates();
+
+        public void SetStateByName(string stateName)
+        {
+            foreach (var state in allStates)
+            {
+                bool isSameState = state.name == stateName;
+                state.SetActive(isSameState);
+            }
+        }
     }
 }

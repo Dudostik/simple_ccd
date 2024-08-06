@@ -1,5 +1,8 @@
-public interface IDamageable
+namespace Dudostik.CardTestGame.EntitiesFeatures
 {
-    void ReceiveDamage(int damage);
-    bool IsDead();
+    public interface IDamageable
+    {
+        void ReceiveDamage(int damage);
+        bool IsDead();
+    }
 }

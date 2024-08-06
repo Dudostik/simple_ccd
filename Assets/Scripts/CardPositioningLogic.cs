@@ -1,35 +1,38 @@
 using System;
 using UnityEngine;
 
-[Serializable]
-public class CardPositioningLogic 
+namespace Dudostik.CardTestGame.GameLogic
 {
-    [SerializeField] private Transform centralCardPosition;
-    [SerializeField] private float positionOffset;
-
-    private int currentCardCount = 0;
-
-    public void Reset()
+    [Serializable]
+    public class CardPositioningLogic
     {
-        currentCardCount = 0;
-    }
+        [SerializeField] private Transform centralCardPosition;
+        [SerializeField] private float positionOffset;
 
-    public Vector3 CalculatePosition(int cardIndex)
-    {
-        bool isFirstCard = cardIndex == 0;
-        Vector3 startPosition = centralCardPosition.position;
+        private int currentCardCount = 0;
 
-        if (!isFirstCard)
+        public void Reset()
         {
-            bool isFromRight = cardIndex % 2 == 0;
-            float modifier = isFromRight ? 1f : -1f;
-
-            if (!isFromRight)
-                currentCardCount++;
-
-            startPosition += Vector3.right * currentCardCount * positionOffset * modifier;
+            currentCardCount = 0;
         }
 
-        return startPosition;
+        public Vector3 CalculatePosition(int cardIndex)
+        {
+            bool isFirstCard = cardIndex == 0;
+            Vector3 startPosition = centralCardPosition.position;
+
+            if (!isFirstCard)
+            {
+                bool isFromRight = cardIndex % 2 == 0;
+                float modifier = isFromRight ? 1f : -1f;
+
+                if (!isFromRight)
+                    currentCardCount++;
+
+                startPosition += Vector3.right * currentCardCount * positionOffset * modifier;
+            }
+
+            return startPosition;
+        }
     }
 }

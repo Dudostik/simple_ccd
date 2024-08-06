@@ -1,4 +1,7 @@
-public interface IPlayableObject
+namespace Dudostik.CardTestGame.EntitiesFeatures
 {
-    bool IsPlayable { get; set; }
+    public interface IPlayableObject
+    {
+        bool IsPlayable { get; set; }
+    }
 }

@@ -1,27 +1,31 @@
 using UnityEngine;
+using Dudostik.CardTestGame.Entities;
 
-public class ObjectsByTurnOwnerController : MonoBehaviour
+namespace Dudostik.CardTestGame.Services
 {
-    [SerializeField] private TurnsManager turnsManager;
-    [SerializeField] private Hero ownerHero;
-    [SerializeField] private GameObject[] gameObjectsToControlCollection;
-
-    public static Hero LocalHero { get; private set; }
-
-    private void Awake()
+    public class ObjectsByTurnOwnerController : MonoBehaviour
     {
-        LocalHero = ownerHero;
-        turnsManager.OnNextTurn += HandleOnNextTurn;
-    }
+        [SerializeField] private TurnsManager turnsManager;
+        [SerializeField] private Hero ownerHero;
+        [SerializeField] private GameObject[] gameObjectsToControlCollection;
 
-    private void OnDestroy()
-    {
-        turnsManager.OnNextTurn -= HandleOnNextTurn;
-    }
+        public static Hero LocalHero { get; private set; }
 
-    private void HandleOnNextTurn(Hero hero)
-    {
-        foreach (GameObject go in gameObjectsToControlCollection)
-            go.SetActive(hero == ownerHero);
+        private void Awake()
+        {
+            LocalHero = ownerHero;
+            turnsManager.OnNextTurn += HandleOnNextTurn;
+        }
+
+        private void OnDestroy()
+        {
+            turnsManager.OnNextTurn -= HandleOnNextTurn;
+        }
+
+        private void HandleOnNextTurn(Hero hero)
+        {
+            foreach (GameObject go in gameObjectsToControlCollection)
+                go.SetActive(hero == ownerHero);
+        }
     }
 }

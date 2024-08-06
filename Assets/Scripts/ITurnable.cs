@@ -1,5 +1,8 @@
-public interface ITurnable
+namespace Dudostik.CardTestGame.EntitiesFeatures
 {
-    void OnTurnStart();
-    void OnTurnEnd();
+    public interface ITurnable
+    {
+        void OnTurnStart();
+        void OnTurnEnd();
+    }
 }

@@ -1,5 +1,8 @@
-public interface IAttackable
+namespace Dudostik.CardTestGame.EntitiesFeatures
 {
-    int GetDamage();
+    public interface IAttackable
+    {
+        int GetDamage();
 
+    }
 }

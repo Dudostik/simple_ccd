@@ -3,232 +3,231 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using Dudostik.CardTestGame.GameLogic;
+using Dudostik.CardTestGame.Data;
+using Dudostik.CardTestGame.Services;
+using Dudostik.CardTestGame.EntitiesFeatures;
 
-public class Hero : StateableObjectBase, IDamageable, ITurnable
+namespace Dudostik.CardTestGame.Entities
 {
-    [Space(5f)]
-    [SerializeField] private GameObject actionState;
-    [SerializeField] private GameObject deathState;
-
-    [Space(5f)]
-    [SerializeField] private SpriteRenderer[] sprites;
-    [SerializeField] private TextMeshPro healtheText;
-    [SerializeField] private TextMeshPro crystalText;
-    [SerializeField] private SpriteRenderer turnIndicatorSprite;
-
-    [Space(5f)]
-    [SerializeField] private HeroData defaultHeroData;
-
-    [Space(5f)]
-    [SerializeField] private CardPositioningLogic handCardPositioningLogic;
-    [SerializeField] private CardPositioningLogic tableCardPositioningLogic;
-
-    [Space(5f)]
-    [SerializeField] private int startCrystalCount = 1;
-    [SerializeField] private string cardInHandState = "READY_STATE";
-
-    [Space(5f)]
-    [SerializeField] private Deck deck;
-    public Deck Deck => deck;
-
-    private int currentCrystalCount;
-    private int maxCrystalCount;
-    public int CurrentCrystalCount => currentCrystalCount;
-    public int MaxCrystalCount => maxCrystalCount;
-
-    private HeroData currentHeroData;
-
-    private LinkedList<Card> currentCardHandList = new LinkedList<Card>();
-    public IReadOnlyCollection<Card> CurrentCardHandList => currentCardHandList;
-
-    private LinkedList<Card> currentCardTableList = new LinkedList<Card>();
-    public IReadOnlyCollection<Card> CurrentTableCardList => currentCardTableList;
-
-    //private LinkedList<Card> currentCardDeckList = new LinkedList<Card>();
-    //public IReadOnlyCollection<Card> CurrentDeckCardList => currentCardDeckList;
-
-    private int currentHeroHealth;
-    private bool isDead;
-    private bool hasTurn;
-
-    public event Action OnDead;
-
-    protected override void Awake()
+    public class Hero : StateableObjectBase, IDamageable, ITurnable
     {
-        base.Awake();
+        [Space(5f)]
+        [SerializeField] private GameObject actionState;
+        [SerializeField] private GameObject deathState;
 
-        if (defaultHeroData != null)
-            SetHeroData(defaultHeroData);
+        [Space(5f)]
+        [SerializeField] private SpriteRenderer[] sprites;
+        [SerializeField] private TextMeshPro healtheText;
+        [SerializeField] private TextMeshPro crystalText;
+        [SerializeField] private SpriteRenderer turnIndicatorSprite;
 
-        SetMaxCrystalCount(startCrystalCount);
-        SetCrystalCount(maxCrystalCount);
-    }
+        [Space(5f)]
+        [SerializeField] private HeroData defaultHeroData;
 
-    public void SetCrystalCount(int crystalCount)
-    {
-        currentCrystalCount = crystalCount;
-        crystalText.SetText(currentCrystalCount.ToString());
-    }
+        [Space(5f)]
+        [SerializeField] private CardPositioningLogic handCardPositioningLogic;
+        [SerializeField] private CardPositioningLogic tableCardPositioningLogic;
 
-    public void SetMaxCrystalCount(int crystalCount)
-    {
-        maxCrystalCount = crystalCount;
-    }
+        [Space(5f)]
+        [SerializeField] private int startCrystalCount = 1;
+        [SerializeField] private string cardInHandState = "READY_STATE";
 
-    protected override List<GameObject> GetAllPossibleStates()
-    {
-        return new List<GameObject> { actionState, deathState };
-    }
+        [Space(5f)]
+        [SerializeField] private Deck deck;
+        public Deck Deck => deck;
 
-    public void SetHeroData(HeroData heroData)
-    {
-        foreach (var spriteRender in sprites)
-            spriteRender.sprite = heroData.Icon;
+        private int currentCrystalCount;
+        private int maxCrystalCount;
+        public int CurrentCrystalCount => currentCrystalCount;
+        public int MaxCrystalCount => maxCrystalCount;
 
-        healtheText.text = heroData.Health.ToString();
+        private HeroData currentHeroData;
 
-        currentHeroData = heroData;
+        private LinkedList<Card> currentCardHandList = new LinkedList<Card>();
+        public IReadOnlyCollection<Card> CurrentCardHandList => currentCardHandList;
 
-        currentHeroHealth = currentHeroData.Health;
-    }
+        private LinkedList<Card> currentCardTableList = new LinkedList<Card>();
+        public IReadOnlyCollection<Card> CurrentTableCardList => currentCardTableList;
 
-    // Манипуляции с картами
-    private void AddCard(Card card, ICollection<Card> cardCollection, CardPositioningLogic positioningLogic, string cardState)
-    {
-        int cardIndex = cardCollection.Count;
+        private int currentHeroHealth;
+        private bool isDead;
+        private bool hasTurn;
 
-        Vector3 pos = positioningLogic.CalculatePosition(cardIndex);
+        public event Action OnDead;
 
-        card.transform.position = pos;
-        card.SetDefaultPostition(pos);
-        card.name = $"CARD_{card.CurrentCardData.name}_{cardIndex}";
-        card.SetStateByName(cardState);
-
-        cardCollection.Add(card);
-    }
-
-    public void AddCardInHand(Card card)
-    {
-        AddCard(card, currentCardHandList, handCardPositioningLogic, cardInHandState);
-        card.SetOnClickMethod((clickedCard) =>
+        protected override void Awake()
         {
-            PutCardOnTable(clickedCard);
-            clickedCard.OnTurnStart();
-        });
-    }
+            base.Awake();
 
-    public void RemoveCardFromHand(Card card) 
-    {
-        currentCardHandList.Remove(card);
-    }
+            if (defaultHeroData != null)
+                SetHeroData(defaultHeroData);
 
-    public void PutCardOnTable(Card card, bool isCheckDiamond = true) 
-    {
-        if (isCheckDiamond && currentCrystalCount < card.CurrentCardData.Price) return;
-
-        AddCard(card, currentCardTableList, tableCardPositioningLogic, "PLAY_STATE");
-        card.SetOnClickMethod(null);
-        currentCardHandList.Remove(card);
-        ResetCardsPositionsInHand();
-
-        if (isCheckDiamond)
-            SetCrystalCount(currentCrystalCount - card.CurrentCardData.Price);
-        
-        IEnumerator waitAndSetControllable()
-        {
-            yield return new WaitForSeconds(0.2f);
-            card.SetIsControllable(this == ObjectsByTurnOwnerController.LocalHero);
+            SetMaxCrystalCount(startCrystalCount);
+            SetCrystalCount(maxCrystalCount);
         }
 
-        StartCoroutine(waitAndSetControllable());
-
-        card.OnDeath -= OnCardDeath;
-        card.OnDeath += OnCardDeath;
-
-        card.IsPlayable = true;
-    }
-
-    private void ResetCardsPositionsOnTable()
-    {
-        List<Card> temp = new List<Card>(currentCardTableList);
-        currentCardTableList.Clear();
-        tableCardPositioningLogic.Reset();
-
-        foreach (Card card in temp)
+        public void SetCrystalCount(int crystalCount)
         {
-            PutCardOnTable(card, false);
+            currentCrystalCount = crystalCount;
+            crystalText.SetText(currentCrystalCount.ToString());
         }
-    }
 
-    private void OnCardDeath(Card deathCard)
-    {
-        currentCardTableList.Remove(deathCard);
-        ResetCardsPositionsOnTable();
-    }
-
-    private void ResetCardsPositionsInHand()
-    {
-        List<Card> temp = new List<Card>(currentCardHandList);
-        currentCardHandList.Clear();
-        handCardPositioningLogic.Reset();
-
-        foreach(Card card in temp) 
+        public void SetMaxCrystalCount(int crystalCount)
         {
-            AddCardInHand(card);
+            maxCrystalCount = crystalCount;
         }
-    }
 
-    public void Death()
-    {
-        // TODO:
-    }
-    /////////////////////////////////////////////////////////
-    
-    public void OnTurnStateChanged(bool isMyTurn)
-    {
-        turnIndicatorSprite.gameObject.SetActive(isMyTurn);
-        
-        if (isMyTurn) 
+        protected override List<GameObject> GetAllPossibleStates()
         {
-            foreach (Card cardOnDeck in currentCardTableList) 
+            return new List<GameObject> { actionState, deathState };
+        }
+
+        public void SetHeroData(HeroData heroData)
+        {
+            foreach (var spriteRender in sprites)
+                spriteRender.sprite = heroData.Icon;
+
+            healtheText.text = heroData.Health.ToString();
+
+            currentHeroData = heroData;
+
+            currentHeroHealth = currentHeroData.Health;
+        }
+
+        // Манипуляции с картами
+        private void AddCard(Card card, ICollection<Card> cardCollection, CardPositioningLogic positioningLogic, string cardState)
+        {
+            int cardIndex = cardCollection.Count;
+
+            Vector3 pos = positioningLogic.CalculatePosition(cardIndex);
+
+            card.transform.position = pos;
+            card.SetDefaultPostition(pos);
+            card.name = $"CARD_{card.CurrentCardData.name}_{cardIndex}";
+            card.SetStateByName(cardState);
+
+            cardCollection.Add(card);
+        }
+
+        public void AddCardInHand(Card card)
+        {
+            AddCard(card, currentCardHandList, handCardPositioningLogic, cardInHandState);
+            card.SetOnClickMethod((clickedCard) =>
             {
-                cardOnDeck.OnTurnStart();
+                PutCardOnTable(clickedCard);
+                clickedCard.OnTurnStart();
+            });
+        }
+
+        public void PutCardOnTable(Card card, bool isCheckDiamond = true)
+        {
+            if (isCheckDiamond && currentCrystalCount < card.CurrentCardData.Price) return;
+
+            AddCard(card, currentCardTableList, tableCardPositioningLogic, "PLAY_STATE");
+            card.SetOnClickMethod(null);
+            currentCardHandList.Remove(card);
+            ResetCardsPositionsInHand();
+
+            if (isCheckDiamond)
+                SetCrystalCount(currentCrystalCount - card.CurrentCardData.Price);
+
+            IEnumerator waitAndSetControllable()
+            {
+                yield return new WaitForSeconds(0.2f);
+                card.SetIsControllable(this == ObjectsByTurnOwnerController.LocalHero);
             }
 
-            OnTurnStart();
+            StartCoroutine(waitAndSetControllable());
+
+            card.OnDeath -= OnCardDeath;
+            card.OnDeath += OnCardDeath;
+
+            card.IsPlayable = true;
         }
-    }
 
-    public void ReceiveDamage(int damage)
-    {
-        if (isDead) return;
-
-        currentHeroHealth -= damage;
-        currentHeroHealth = Mathf.Clamp(currentHeroHealth, 0, int.MaxValue);
-
-        healtheText.SetText(currentHeroHealth.ToString());
-
-        isDead = currentHeroHealth <= 0;
-
-        if (isDead)
+        private void ResetCardsPositionsOnTable()
         {
-            SetStateByName("DEATH_STATE");
-            OnDead?.Invoke();
+            List<Card> temp = new List<Card>(currentCardTableList);
+            currentCardTableList.Clear();
+            tableCardPositioningLogic.Reset();
+
+            foreach (Card card in temp)
+            {
+                PutCardOnTable(card, false);
+            }
         }
-    }
 
-    public void OnTurnStart()
-    {
-        hasTurn = true;
-    }
+        private void OnCardDeath(Card deathCard)
+        {
+            currentCardTableList.Remove(deathCard);
+            ResetCardsPositionsOnTable();
+        }
 
-    public void OnTurnEnd()
-    {
-        hasTurn = false;
-    }
+        private void ResetCardsPositionsInHand()
+        {
+            List<Card> temp = new List<Card>(currentCardHandList);
+            currentCardHandList.Clear();
+            handCardPositioningLogic.Reset();
 
-    public bool IsDead()
-    {
-        return isDead;
+            foreach (Card card in temp)
+            {
+                AddCardInHand(card);
+            }
+        }
+
+        public void Death()
+        {
+            // TODO:
+        }
+        /////////////////////////////////////////////////////////
+
+        public void OnTurnStateChanged(bool isMyTurn)
+        {
+            turnIndicatorSprite.gameObject.SetActive(isMyTurn);
+
+            if (isMyTurn)
+            {
+                foreach (Card cardOnDeck in currentCardTableList)
+                {
+                    cardOnDeck.OnTurnStart();
+                }
+
+                OnTurnStart();
+            }
+        }
+
+        public void ReceiveDamage(int damage)
+        {
+            if (isDead) return;
+
+            currentHeroHealth -= damage;
+            currentHeroHealth = Mathf.Clamp(currentHeroHealth, 0, int.MaxValue);
+
+            healtheText.SetText(currentHeroHealth.ToString());
+
+            isDead = currentHeroHealth <= 0;
+
+            if (isDead)
+            {
+                SetStateByName("DEATH_STATE");
+                OnDead?.Invoke();
+            }
+        }
+
+        public void OnTurnStart()
+        {
+            hasTurn = true;
+        }
+
+        public void OnTurnEnd()
+        {
+            hasTurn = false;
+        }
+
+        public bool IsDead()
+        {
+            return isDead;
+        }
     }
 }
