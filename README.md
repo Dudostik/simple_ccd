@@ -7,3 +7,11 @@ h1 Battle of Drerton
 ***
 ### h3 Links
 * [Дизайн документ](https://docs.google.com/document/d/133sqVSniT0oy_vxVwSmSJ5JsqpiUwjo6uUuhszjI1yM/edit?usp=sharing)
+***
+### h3 Инструкция по запуску
+В папке Builds запустить файл simple-ccd.exe, выйти из игры - alt + f4.
+***
+### h3 Управление
+Выложить карту на стол - клик левой кнопкой мыши по нужной карте
+Атаковать - перетянуть карту со стола на карту или героя противника
+Передать ход - нажать на кнопку Next Turn
